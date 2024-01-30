@@ -5,7 +5,7 @@ from py_vollib_vectorized import vectorized_implied_volatility as implied_vol
 from numpy.linalg import solve
 import logging
 logging.basicConfig(level = logging.DEBUG)
-from scipy.stats import moment,norm
+from scipy.stats import moment, norm
 
 def heston_model_sim(S0, v0, rho, kappa, theta, sigma,T, N, M):
     """
@@ -163,3 +163,56 @@ def name_ticker_pair():
              "wheat":"ZW=F", 
              "yen":"JPY=X"}
     return pairs
+
+
+def SimuStockPath(s0: float, alpha: float, sigma: float, T: float, Nsim: int, stratified: bool) -> np.ndarray:
+  '''
+  s0: spot price
+  alpha: instantaneous mean rate
+  sigma: volatility
+  T: time to maturity
+  Nsim: numbers of simuation path
+  stratified: using stratified sampling method or not
+  '''
+  if stratified:
+      unif_samples = np.random.uniform(size=(Nsim))
+      stratified_samples = (np.arange(1, Nsim + 1) - unif_samples) / Nsim
+      z = norm.ppf(stratified_samples)
+      np.random.shuffle(z)
+
+  else:
+      z = np.random.standard_normal((Nsim))
+
+  prices = np.zeros((Nsim))
+  for n in np.arange(Nsim):
+      drift = (alpha - 0.5 * sigma**2) * T
+      diffusion = sigma * np.sqrt(T) * z[n]
+
+      prices[n] =  s0 * np.exp(drift + diffusion)
+
+  return prices
+
+def EuropeanOptionPrice(s0: float,alpha: float, sigma: float, r: float, T: float, Nsim: int , k: float, call: bool, stratified: bool) -> float:
+    '''
+    s0: spot price
+    alpha: instantaneous mean rate; should equal to risk free rate
+    sigma: volatility
+    r: risk free rate
+    T: time to maturity
+    Nsim: numbers of simuation path
+    k: strike
+    call: option type
+    stratified: using stratified sampling method or not
+    '''
+    price = SimuStockPath(s0, alpha, sigma, T, Nsim, stratified)
+
+    if call:
+      payoff = np.maximum(price - k, 0)
+    else:
+      payoff = np.maximum(k - price, 0)
+
+    pv_payoff = payoff * np.exp(-r * T)
+
+    option_price = np.mean(pv_payoff)
+
+    return option_price
