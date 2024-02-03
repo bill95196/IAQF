@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 from getData import getRnd, getDailyPrice
 
-ticker = "citi_3"
+ticker = "gold_6"
 rnd = getRnd(ticker)
 yf_price = getDailyPrice(ticker)
 
