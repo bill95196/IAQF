@@ -3,8 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import statsmodels.api as sm
 
-from getData import getRnd, getDailyPrice, getData
-from set_logger import setupLog
+from tools.getData import getData
+from tools.set_logger import setupLog
 
 logger = setupLog(ident='TestReturn', level='INFO', handlers_type='console')
 #显示所有列

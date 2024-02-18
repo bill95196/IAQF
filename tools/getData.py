@@ -1,6 +1,6 @@
 import pandas as pd
 import yfinance as yf
-from set_logger import setupLog
+from tools.set_logger import setupLog
 
 logger = setupLog(ident='TestReturn', level='INFO', handlers_type='console')
 

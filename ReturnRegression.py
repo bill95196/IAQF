@@ -3,15 +3,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import statsmodels.api as sm
 
-from getData import getRnd, getDailyPrice, getData
-from set_logger import setupLog
+from tools.getData import getData
+from tools.set_logger import setupLog
 
 logger = setupLog(ident='TestReturn', level='INFO', handlers_type='console')
 #显示所有列
 pd.set_option('display.max_columns', None)
 #显示所有行
 pd.set_option('display.max_rows', None)
-#现实宽度
+#显示宽度
 pd.set_option('display.width', 500)
 
 pairs = {"silver_6":"SI=F",
