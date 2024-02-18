@@ -35,6 +35,7 @@ for ticker in pairs.keys():
     rnd, yf_price = getData(ticker)
 
     yf_price['return'] = np.log(yf_price['Close']/yf_price['Close'].shift(1)) # daily return 
+    yf_price['return'] = yf_price['return'].shift(-1)
 
     R2 = pd.DataFrame()
     Pvalue = pd.DataFrame()
@@ -44,7 +45,7 @@ for ticker in pairs.keys():
         qval_series =  pd.Series(dtype=float)
         
         indexer = pd.api.indexers.FixedForwardWindowIndexer(window_size=win) # win size forward volatility
-        yf_price['forward_rv'] = np.sqrt((yf_price['return']**2).rolling(window=indexer, min_periods=1).sum())
+        yf_price['forward_rv'] = np.sqrt((yf_price['return']**2).rolling(window=indexer).sum())
         rnd['forward_vol'] = yf_price['forward_rv']
         
         selected = ['mu', 'sd', 'skew','kurt','p10','p50','p90','prDec','prInc','forward_vol']
@@ -73,5 +74,5 @@ for ticker in pairs.keys():
     R2 = R2.T
     Pvalue = Pvalue.T
     combined_df = pd.concat([R2, Pvalue], axis=0)
-    combined_df.to_csv(f'VolInfo/{ticker}_vol.csv')
+    combined_df.to_csv(f'Vol_info/{ticker}_vol.csv')
     logger.info(f'Saved {ticker} results in the folder')

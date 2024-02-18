@@ -35,7 +35,8 @@ for ticker in pairs.keys():
     rnd, yf_price = getData(ticker)
 
     yf_price['return'] = np.log(yf_price['Close']/yf_price['Close'].shift(1)) # daily return 
-
+    yf_price['return'] = yf_price['return'].shift(-1)
+    
     R2 = pd.DataFrame()
     Pvalue = pd.DataFrame()
     time_interval = [10, 30, 50, 80, 110, 130, 150, 180]
@@ -44,7 +45,7 @@ for ticker in pairs.keys():
         qval_series =  pd.Series(dtype=float)
         
         indexer = pd.api.indexers.FixedForwardWindowIndexer(window_size=win) # win size forward return
-        yf_price['forward_ret'] = yf_price['return'].rolling(window=indexer, min_periods=1).sum()
+        yf_price['forward_ret'] = yf_price['return'].rolling(window=indexer).sum()
         rnd['forward_ret'] = yf_price['forward_ret']
         
         selected = ['mu', 'sd', 'skew','kurt','p10','p50','p90','prDec','prInc','forward_ret']
@@ -73,7 +74,7 @@ for ticker in pairs.keys():
     R2 = R2.T
     Pvalue = Pvalue.T
     combined_df = pd.concat([R2, Pvalue], axis=0)
-    combined_df.to_csv(f'ReturnInfo/{ticker}_return.csv')
+    combined_df.to_csv(f'Return_info/{ticker}_return.csv')
     logger.info(f'Saved {ticker} results in the folder')
 
         
