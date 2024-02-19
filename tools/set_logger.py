@@ -62,7 +62,4 @@ def setupLog(ident, level='DEBUG', handlers_type='console'):
     logging.config.dictConfig(LOG_CONF)
     return logging.getLogger(ident)
 
-
-if __name__ == "__main__":
-    logger = setupLog(ident='testing', level='INFO', handlers_type='file')
-    logger.info('New message in file')
+logger = setupLog(ident='_', level='INFO', handlers_type='console')

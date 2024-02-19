@@ -8,8 +8,7 @@ from sklearn.utils.class_weight import compute_class_weight
 
 from tools.training_tools import generate_feature_importances_plot, generate_predict_plot
 from tools.getData import getData
-from tools.set_logger import setupLog
-logger = setupLog(ident='rf_vol', level='INFO', handlers_type='console')
+from tools.set_logger import logger
 
 #显示所有列
 pd.set_option('display.max_columns', None)
@@ -35,9 +34,6 @@ rnd_data.dropna(inplace=True)
 
 # overall data distribution
 logger.info(f'feature/label: \n {rnd_data.describe().T}')
-
-
-
 
 
 def train_test_split(features: pd.DataFrame, split_ratio = 0.7):
@@ -84,10 +80,8 @@ def train_rf(model_params, x_train, y_train, x_test, y_test):
     real = y_test
     pred = pd.Series(pred, index = real.index)
     
-    mse = mean_squared_error(real, pred)
-    logger.info(f"Mean Squared Error (MSE): {mse}")
-
-    # Calculating R-squared
+    rmse = np.sqrt(mean_squared_error(real, pred))
+    logger.info(f"Root Mean Squared Error (RMSE): {rmse}")
     r2 = r2_score(real, pred)
     logger.info(f"R2: {r2}")
 

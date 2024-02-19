@@ -7,8 +7,7 @@ from sklearn.metrics import confusion_matrix
 from sklearn.utils.class_weight import compute_class_weight
 
 from tools.getData import getData
-from tools.set_logger import setupLog
-logger = setupLog(ident='rf_return', level='INFO', handlers_type='console')
+from tools.set_logger import logger
 
 #显示所有列
 pd.set_option('display.max_columns', None)
@@ -23,11 +22,11 @@ ticker = 'sp6m_6'
 rnd_data, dailyprice = getData(ticker)
 
 # preprocess data: create label and merge to rnd dataset
-return_7 = (dailyprice['Close'].shift(-15) - dailyprice['Close']) / dailyprice['Close']
-rnd_data['ret_7'] = return_7
+return_15 = (dailyprice['Close'].shift(-15) - dailyprice['Close']) / dailyprice['Close']
+rnd_data['ret_15'] = return_15
 
-rnd_data['label'] = rnd_data['ret_7'].apply(lambda x: 1 if x > 0 else 0)
-rnd_data.drop(['market','maturity_target','lg_change_decr','lg_change_incr','ret_7'], axis = 1, inplace= True)
+rnd_data['label'] = rnd_data['ret_15'].apply(lambda x: 1 if x > 0 else -1)
+rnd_data.drop(['market','maturity_target','lg_change_decr','lg_change_incr','ret_15'], axis = 1, inplace= True)
 rnd_data.dropna(inplace=True)
 
 # overall data distribution
@@ -83,6 +82,7 @@ def train_rf(model_params, x_train, y_train, x_test, y_test):
                                     random_state=10,
                                     class_weight=class_weight_dict)
     rf.fit(x_train, y_train)
+
     
     pred = rf.predict(x_test)
     real = y_test
@@ -110,14 +110,26 @@ def train_rf(model_params, x_train, y_train, x_test, y_test):
     plt.title("Feature Importance")
     plt.show()
     
+    return pred
+    
     
 x, y, x_test, y_test = train_test_split(features= rnd_data, split_ratio= 0.7)
 best_params = grid_search(x, y)
-train_rf(model_params= best_params, x_train= x, y_train= y, x_test= x_test, y_test= y_test)
+yhat = train_rf(model_params= best_params, 
+                x_train= x, 
+                y_train= y, 
+                x_test= x_test, 
+                y_test= y_test)
+
+yhat.name = 'signals'
 
 
-    
-    
+df = pd.merge(yhat,dailyprice,how='left',left_index=True, right_index=True)
+df['index'] = df['signals']
+df.drop(['signals','Adj Close', 'Volume'], axis=1, inplace=True)
+logger.info(f'first 5 row: \n {df.head(5)}')
+
+# df.to_csv('backtest.csv')
     
     
     
