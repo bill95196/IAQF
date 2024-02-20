@@ -6,8 +6,11 @@ from sklearn.model_selection import GridSearchCV, TimeSeriesSplit
 from sklearn.metrics import confusion_matrix
 from sklearn.utils.class_weight import compute_class_weight
 
+from feature_engineering import features, more_data
 from tools.getData import getData
 from tools.set_logger import logger
+import warnings
+warnings.filterwarnings("ignore")
 
 #显示所有列
 pd.set_option('display.max_columns', None)
@@ -20,6 +23,11 @@ pd.set_option('display.width', 500)
 
 ticker = 'sp6m_6'
 rnd_data, dailyprice = getData(ticker)
+
+feature_df = features(dailyprice)
+add_data = more_data(dailyprice)
+rnd_data = rnd_data.merge(feature_df, how='left', left_index=True, right_index=True)
+rnd_data = rnd_data.merge(add_data, how='left', left_index=True, right_index=True)
 
 # preprocess data: create label and merge to rnd dataset
 return_15 = (dailyprice['Close'].shift(-15) - dailyprice['Close']) / dailyprice['Close']
@@ -57,10 +65,10 @@ def grid_search(x_train, y_train):
     rf = RandomForestClassifier()
     
     param_grid = {
-    'n_estimators': [10,20, 30, 40, 50],
-    'max_depth': [3, 5, 7, 10, 15, 20],
-    'min_samples_leaf': [3, 5, 10, 15,20, 30, 40, 50],
-    'max_samples': [0.3, 0.4, 0.5, 0.6]
+    'n_estimators': [10,20, 30, 40, 50, 60],
+    'max_depth': [3,5,8,10, 15, 20, 30],
+    'min_samples_leaf': [3, 5, 10, 15, 20, 30, 40, 50],
+    'max_samples': [0.4, 0.5, 0.6, 0.7, 0.8]
     }
     
     tscv = TimeSeriesSplit(n_splits=3)
@@ -68,6 +76,7 @@ def grid_search(x_train, y_train):
     grid_search = GridSearchCV(estimator=rf, param_grid=param_grid, cv=tscv, n_jobs=-1, verbose=0)
     grid_search.fit(x_train, y_train)
     logger.info(f'\n Best paramters: {grid_search.best_params_} \n')
+    logger.info(f"Best score: {grid_search.best_score_} \n")
     
     return grid_search.best_params_
 
@@ -129,7 +138,7 @@ df['index'] = df['signals']
 df.drop(['signals','Adj Close', 'Volume'], axis=1, inplace=True)
 logger.info(f'first 5 row: \n {df.head(5)}')
 
-# df.to_csv('backtest.csv')
+df.to_csv('backtest.csv')
     
     
     
