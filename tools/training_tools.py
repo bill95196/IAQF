@@ -1,8 +1,9 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix
 from tools.set_logger import logger
 
-def confusion_matrix(pred: pd.Series, real: pd.Series, thred=0.001):
+def confusion_matrix_reg(pred: pd.Series, real: pd.Series, thred=0.001):
     real_class = real.apply(lambda x: 1 if x >= thred else 0)
     pred_class = pred.apply(lambda x: 1 if x >= thred else 0)
     
@@ -20,16 +21,25 @@ def confusion_matrix(pred: pd.Series, real: pd.Series, thred=0.001):
     precision = rslt.loc["p1", 1] / (rslt.loc["p1", 0] + rslt.loc["p1", 1])
     logger.info(f"precision:\n {precision}")
     
-def generate_feature_importances_plot(model, x_test):
-    # draw feature importance plot
-    importances = pd.Series(model.feature_importances_, index=x_test.columns)
+def confusion_matrix_clf(true_value: pd.Series, prediction:pd.Series):
+    cm = confusion_matrix(true_value, prediction)
+    logger.info(f'confusion matrix:\n {cm}')
+    tn, fp, fn, tp = cm.ravel()
+    precision = tp / (tp + fp)
+    recall = tp / (tp + fn)
+    accuracy = (tp + tn) / (tp + tn + fp + fn)
+    logger.info(f'precision: {precision:.3f}')
+    logger.info(f'recall: {recall:.3f}')
+    logger.info(f'accuracy: {accuracy:.3f}')
+
+def feature_importances_plot(model, test_series):
+    importances = pd.Series(model.feature_importances_, index=test_series.columns)
     importances.sort_values(ascending=True, inplace=True)
     importances.plot.barh(color='green')
     plt.xlabel("Importance")
     plt.ylabel("Feature")
     plt.title("Feature Importance")
     plt.show()
-    return None
     
 def generate_predict_plot(model, x_train, y_train, x_test, y_test):
     y_in_sample = pd.Series(model.predict(x_train), index = y_train.index)
@@ -46,6 +56,8 @@ def generate_predict_plot(model, x_train, y_train, x_test, y_test):
     plt.legend()
     plt.show()
     return None
+
+
 
 
     
