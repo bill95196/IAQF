@@ -25,6 +25,7 @@ ticker = 'sp6m_6'
 rnd_data, dailyprice = getData(ticker)
 
 # add additional features
+
 feature_df = features(dailyprice)
 add_data = more_data(dailyprice)
 rnd_data = rnd_data.merge(feature_df, how='left', left_index=True, right_index=True)
@@ -49,7 +50,7 @@ logger.info(f'class disturbution: {dict(zip(unique, counts))}')
 class_labels = np.unique(rnd_data['label'])
 class_weights = compute_class_weight(class_weight='balanced', classes=class_labels, y=rnd_data['label'])
 class_weight_dict = {class_labels[i]: class_weights[i] for i in range(len(class_labels))}
-logger.info(f'class weight: {class_weight_dict}')
+logger.info(f'adjusted class weights: {class_weight_dict}')
 
 
 def train_test_split(features: pd.DataFrame, split_ratio = 0.7):
@@ -65,13 +66,13 @@ def grid_search(x_train, y_train):
     rf = RandomForestClassifier()
     
     param_grid = {
-    'n_estimators': [10, 20, 30, 40, 50, 60],
-    'max_depth': [3, 5, 8, 10, 15, 20, 30],
-    'min_samples_leaf': [3, 5, 10, 15, 20, 30, 40, 50],
+    'n_estimators': [10, 15, 20, 30, 40, 50, 60],
+    'max_depth': [3, 4, 5, 6, 7, 8],
+    'min_samples_leaf': [10, 15, 20, 30, 40, 50],
     'max_samples': [0.4, 0.5, 0.6, 0.7, 0.8]
     }
     
-    tscv = TimeSeriesSplit(n_splits=3)
+    tscv = TimeSeriesSplit(n_splits=5)
     
     grid_search = GridSearchCV(estimator=rf, param_grid=param_grid, cv=tscv, n_jobs=-1, verbose=0)
     grid_search.fit(x_train, y_train)
@@ -105,7 +106,7 @@ def train_rf(model_params, x_train, y_train, x_test, y_test):
 
 x, y, x_test, y_test = train_test_split(features= rnd_data, split_ratio= 0.7)
 best_params = grid_search(x, y)
-yhat = train_rf(model_params=best_params, 
+yhat = train_rf(model_params= best_params, 
                 x_train= x, 
                 y_train= y, 
                 x_test= x_test, 
@@ -116,7 +117,7 @@ df['index'] = yhat
 df.drop(['signals','Adj Close', 'Volume'], axis=1, inplace=True)
 logger.info(f'first 5 row: \n {df.head(5)}')
 
-# df.to_csv('backtest.csv')
+df.to_csv('backtest.csv')
     
     
     

@@ -35,7 +35,7 @@ label         684.0   0.260234   0.966252  -1.000000  -1.000000   1.000000    1.
  {-1: 253, 1: 431}
 2024-02-20 14:02:01,605 [random_forest_return_model.py:51] [INFO] - class weight: {-1: 1.3517786561264822, 1: 0.7935034802784223}
 2024-02-20 14:03:27,507 [random_forest_return_model.py:78] [INFO] - 
- Best paramters: {'max_depth': 15, 'max_samples': 0.4, 'min_samples_leaf': 20, 'n_estimators': 10} 
+Best paramters: {'max_depth': 15, 'max_samples': 0.4, 'min_samples_leaf': 20, 'n_estimators': 10} 
 
 2024-02-20 14:03:27,507 [random_forest_return_model.py:79] [INFO] - Best score: 0.6526610644257703 
 

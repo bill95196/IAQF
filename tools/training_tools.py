@@ -1,6 +1,5 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-from sklearn.metrics import confusion_matrix
 from tools.set_logger import logger
 
 def confusion_matrix_reg(pred: pd.Series, real: pd.Series, thred=0.001):
@@ -22,6 +21,7 @@ def confusion_matrix_reg(pred: pd.Series, real: pd.Series, thred=0.001):
     logger.info(f"precision:\n {precision}")
     
 def confusion_matrix_clf(true_value: pd.Series, prediction:pd.Series):
+    from sklearn.metrics import confusion_matrix
     cm = confusion_matrix(true_value, prediction)
     logger.info(f'confusion matrix:\n {cm}')
     tn, fp, fn, tp = cm.ravel()
