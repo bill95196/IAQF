@@ -20,6 +20,22 @@ def confusion_matrix_reg(pred: pd.Series, real: pd.Series, thred=0.001):
     precision = rslt.loc["p1", 1] / (rslt.loc["p1", 0] + rslt.loc["p1", 1])
     logger.info(f"precision:\n {precision}")
     
+def confusion_matrix_reg(true_value: pd.Series, prediction:pd.Series):
+    real_class = true_value.apply(lambda x: 1 if x > 0 else -1)
+    pred_class = prediction.apply(lambda x: 1 if x > 0 else -1)
+    
+    from sklearn.metrics import confusion_matrix
+    cm = confusion_matrix(real_class, pred_class)
+    logger.info(f'confusion matrix:\n {cm}')
+    tn, fp, fn, tp = cm.ravel()
+    precision = tp / (tp + fp)
+    recall = tp / (tp + fn)
+    accuracy = (tp + tn) / (tp + tn + fp + fn)
+    logger.info(f'precision: {precision:.3f}')
+    logger.info(f'recall: {recall:.3f}')
+    logger.info(f'accuracy: {accuracy:.3f}')
+
+    
 def confusion_matrix_clf(true_value: pd.Series, prediction:pd.Series):
     from sklearn.metrics import confusion_matrix
     cm = confusion_matrix(true_value, prediction)
@@ -32,10 +48,10 @@ def confusion_matrix_clf(true_value: pd.Series, prediction:pd.Series):
     logger.info(f'recall: {recall:.3f}')
     logger.info(f'accuracy: {accuracy:.3f}')
 
-def feature_importances_plot(model, test_series):
-    importances = pd.Series(model.feature_importances_, index=test_series.columns)
+def feature_importances_plot(model, x_test):
+    importances = pd.Series(model.feature_importances_, index=x_test.columns)
     importances.sort_values(ascending=True, inplace=True)
-    importances.plot.barh(color='green')
+    importances.plot.barh(color='blue')
     plt.xlabel("Importance")
     plt.ylabel("Feature")
     plt.title("Feature Importance")
@@ -45,17 +61,25 @@ def generate_predict_plot(model, x_train, y_train, x_test, y_test):
     y_in_sample = pd.Series(model.predict(x_train), index = y_train.index)
     y_out_sample =pd.Series(model.predict(x_test), index = y_test.index)
     
-    last_timestamp = y_in_sample.index.to_list()[-1]
-    
-    full_pred = pd.concat([y_in_sample, y_out_sample], axis= 0)
-    full_real = pd.concat([y_train, y_test], axis= 0)
-    
-    plt.plot(full_real.index, full_real, label = 'real')
-    plt.plot(full_real.index, full_pred,label = 'pred')
-    plt.axvline(last_timestamp, color='r', linestyle='--',linewidth=0.5)
-    plt.legend()
+    fig, axs = plt.subplots(1, 2, figsize=(12, 6))
+
+    # In-sample fitting plot
+    axs[0].plot(x_train.index, y_train, label="Actual", color="blue")
+    axs[0].plot(x_train.index, y_in_sample, label="Predicted", color="orange")
+    axs[0].set_title("In-Sample Fitting")
+    axs[0].legend()
+
+    # Out-of-sample prediction plot
+    axs[1].plot(x_test.index, y_test, label="Actual", color="blue")
+    axs[1].plot(x_test.index, y_out_sample, label="Predicted", color="orange")
+    axs[1].set_title('Out-Of-Sample Prediction')
+    axs[1].legend()
+
+    plt.tight_layout()
     plt.show()
-    return None
+    
+    
+
 
 
 

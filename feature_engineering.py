@@ -1,13 +1,6 @@
 import pandas as pd
 import pandas_ta as ta
 import numpy as np
-import matplotlib.pyplot as plt
-
-from tools.getData import getData
-from tools.set_logger import logger
-
-ticker = ticker = "sp6m_6"
-rnd_data, dailyprice = getData(ticker)
 
 def lag_ret(data):
     ret = np.log(data['Close'] / data['Close'].shift(1))
@@ -44,7 +37,7 @@ def on_balance_volume(data):
     obv = data.ta.obv()/ 1e10
     return obv.fillna(0)
 
-def features(data):
+def self_construct_features(data):
     df = pd.DataFrame()
     df['lag_ret'] = lag_ret(data)
     df['lag_vol'] = lag_vol(data)
@@ -56,7 +49,7 @@ def features(data):
     
     return df
 
-def more_data(data):
+def additional_data(data):
     dff = pd.read_csv("data/DFF.csv", index_col="DATE") # daily
     dff.index = pd.to_datetime(dff.index)
     
@@ -86,6 +79,14 @@ def more_data(data):
     U2_rate.index = pd.to_datetime(U2_rate.index)
     U2_rate = U2_rate.resample('D').ffill()
     
+    hurst = pd.read_csv("data/HurstExponent.csv", index_col="Date")
+    hurst.index = pd.to_datetime(hurst.index)
+    hurst = hurst.resample('D').ffill()
+    
+    m1 = pd.read_csv("data/WM1NS.csv", index_col="DATE")
+    m1.index = pd.to_datetime(m1.index)
+    m1 = m1.resample('D').ffill()
+    
     df = pd.DataFrame(index = data.index)
     
     df['dff'] = dff
@@ -94,6 +95,9 @@ def more_data(data):
     df['ffund'] = ffund
     df['con_senti'] = con_senti
     df['u2_rate'] = U2_rate
+    df['hurst'] = hurst
+    df['m1'] = m1
+    
     df = df.merge(ff_all, how = 'left', left_index=True, right_index=True)
     
     return df.ffill()
