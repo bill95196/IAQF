@@ -10,7 +10,7 @@ logger.setLevel(level=logging.INFO)
 # start_date: 回测数据开始的日期
 # end_date: 回测数据截至的日期
 backTest(
-            data='./raw data/backtesting_data.csv',
-            start_date=bt.datetime.datetime(2018, 1, 31),
-            end_date=bt.datetime.datetime(2021, 12, 2),
+            data='./data/backtest_data.csv',
+            start_date=bt.datetime.datetime(2022, 1, 5),
+            end_date=bt.datetime.datetime(2024, 1, 3),
             logger=logger)
