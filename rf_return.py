@@ -29,6 +29,7 @@ rnd_data = rnd_data.merge(add_data, how='left', left_index=True, right_index=Tru
 # define the label
 rnd_data["Close_Price"] = dailyprice["Close"]
 rnd_data["return"] = (rnd_data["Close_Price"].shift(-1) - rnd_data["Close_Price"]) / rnd_data["Close_Price"]
+for_test = rnd_data.copy()
 
 rnd_data['label'] = rnd_data['return'].apply(lambda x: 1 if x > 0 else -1)
 rnd_data.drop(['market','maturity_target','lg_change_decr','lg_change_incr','return', 'Close_Price'], axis = 1, inplace= True)
@@ -36,8 +37,6 @@ rnd_data.dropna(inplace=True)
 
 # overall data distribution
 logger.info(f'feature/label: \n {rnd_data.describe().T}')
-
-
 
 def train_test_split(features: pd.DataFrame, train_start: str, train_end: str):
     train_start = pd.to_datetime(train_start, format='%Y-%m-%d')
@@ -51,7 +50,7 @@ def train_test_split(features: pd.DataFrame, train_start: str, train_end: str):
     
 def grid_search(x_train, y_train):
     
-    rf = RandomForestClassifier()
+    rf = RandomForestClassifier(random_state=10)
     
     param_grid = {
     'n_estimators': [10, 15, 20, 30, 40, 50, 60],
@@ -100,9 +99,8 @@ x, y, x_test, y_test = train_test_split(features= rnd_data,
                                         train_start= "2020-01-01", 
                                         train_end = "2022-01-01")
 
+best_params = grid_search(x, y)
 
-# best_params = grid_search(x, y)
-best_params = {'max_depth': 8, 'max_samples': 0.6, 'min_samples_leaf': 10, 'n_estimators': 15} 
 yhat = train_rf(model_params= best_params, 
                 x_train= x, 
                 y_train= y, 
@@ -115,6 +113,25 @@ df.drop(['signals','Adj Close', 'Volume'], axis=1, inplace=True)
 logger.info(f'first 5 row: \n {df.head(5)}')
 
 df.to_csv('backtest.csv')
+
+
+
+x, y, x_test, y_test = train_test_split(features= for_test, 
+                                        train_start= "2020-01-01", 
+                                        train_end = "2022-01-01")
+
+new_df = pd.DataFrame()
+new_df["return"] = y_test
+new_df["pred"] = yhat
+
+n = pd.Series([len(yhat[yhat == -1]), len(yhat[yhat == 1])], index = [-1, 1])
+reslt_mean = new_df.groupby('pred').mean()['return'].reindex([-1, 1])
+reslt_std = new_df.groupby('pred').std()['return'].reindex([-1, 1])
+
+output = pd.DataFrame({"num": n, "mean": reslt_mean, "std": reslt_std}, index = [-1, 1])
+output['std_err'] = output['std'] / np.sqrt(output['num'])
+output['t'] = output['mean'] / output['std_err']
+logger.info(f"{output}")
     
     
     
