@@ -11,6 +11,6 @@ logger.setLevel(level=logging.INFO)
 # end_date: 回测数据截至的日期
 backTest(
             data='/Users/jinnia/Desktop/backtest/raw data/backtesting_data.csv',
-            start_date=bt.datetime.datetime(2015, 1, 7),
-            end_date=bt.datetime.datetime(2024, 1, 10),
+            start_date=bt.datetime.datetime(2008, 3, 31),
+            end_date=bt.datetime.datetime(2022, 12, 28),
             logger=logger)

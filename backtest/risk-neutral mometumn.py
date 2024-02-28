@@ -44,10 +44,18 @@ results_df.to_csv('/Users/jinnia/Desktop/data1/Hurst Exponent.csv', index=False)
 
 # rolling mean
 window_size = 2
-results_df['Rolling Mean Hurst'] = results_df['Hurst Exponent'].rolling(window=window_size).mean()
-results_df['Rolling Mean Hurst'] = results_df['Rolling Mean Hurst'].fillna(method='ffill')
-results_df['index'] = results_df.apply(lambda row: 1 if row['Hurst Exponent'] > row['Rolling Mean Hurst'] else -1, axis=1)
+# results_df['Rolling Mean Hurst'] = results_df['Hurst Exponent'].rolling(window=window_size).mean()
+# results_df['Rolling Mean Hurst'] = results_df['Rolling Mean Hurst'].fillna(method='ffill')
+# results_df['index'] = results_df.apply(lambda row: -1 if row['Hurst Exponent'] > row['Rolling Mean Hurst'] else 1, axis=1)
+# print(results_df)
+
+
+results_df['EMA Hurst'] = results_df['Hurst Exponent'].ewm(span=window_size, adjust=False).mean()
+results_df['EMA Hurst'] = results_df['EMA Hurst'].fillna(method='ffill')
+results_df['index'] = results_df.apply(lambda row: -1 if row['Hurst Exponent'] > row['EMA Hurst'] else 1, axis=1)
+
 print(results_df)
+
 
 # 5-day mometumn
 # results_df['Hurst Difference'] = results_df['Hurst Exponent'].shift(1) - results_df['Hurst Exponent'].shift(6)
@@ -59,14 +67,20 @@ sp_df.set_index('Date', inplace=True)
 sp_selected = sp_df[['Open','High','Low','Close']]
 merged_df = results_df.join(sp_selected, on='Date', how='left')
 merged_df.dropna(subset=['Open'], inplace=True)
-#merged_df = merged_df.drop(['Rolling Mean Hurst', 'Hurst Exponent'], axis=1)
-merged_df = merged_df.drop(['Hurst Difference', 'Hurst Exponent'], axis=1)
+merged_df = merged_df.drop(['EMA Hurst', 'Hurst Exponent'], axis=1)
 
 
 cols = [col for col in merged_df.columns if col != 'index']
 cols.append('index')
 merged_df = merged_df[cols]
-print(merged_df)
+
+# merged_df.set_index('Date', inplace=True)
+# start_date = '2015-01-07'
+# filtered_df = merged_df.loc[start_date:]
+# filtered_df.reset_index(inplace=True)
+# filtered_df['Date'] = pd.to_datetime(filtered_df['Date']).dt.strftime('%Y-%m-%d')
+
+# print(filtered_df)
 
 merged_df.to_csv('/Users/jinnia/Desktop/backtest/raw data/backtesting_data.csv', index=False)
 
