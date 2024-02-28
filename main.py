@@ -52,13 +52,13 @@ def backTest(data, start_date, end_date, logger):
 
     # 以年化收益率1.7%作为无风险利率计算Sharpe ratio
     risk_free_rate = 0.017
-    risk_free_rate_daily = (1 + risk_free_rate)**(1/252) - 1
+    risk_free_rate_biweek = (1 + risk_free_rate)**(1/25) - 1
     df = pd.DataFrame({"Account value":result[0].p.account_value})
     df["Time"] = pd.to_datetime(pd.read_csv(data)["Date"])
     df['Account value'] = df['Account value']-500000
     df['Return'] = df['Account value'].pct_change()
     # Calculate the excess returns by subtracting the daily risk-free rate from the daily returns
-    df['Excess Return'] = df['Return'] - risk_free_rate_daily
+    df['Excess Return'] = df['Return'] - risk_free_rate_biweek
     # Calculate the Sharpe Ratio
     sharpe_ratio = df['Excess Return'].mean() / df['Excess Return'].std()
     # Annualize the Sharpe Ratio
@@ -85,7 +85,7 @@ def backTest(data, start_date, end_date, logger):
     plt.plot(df["Time"], account_value, label="Account value")
     plt.plot(df["Time"],total_trend, label="Market trend")
     plt.xticks(rotation=45)
-    plt.title("Account value compared to market trend")
+    plt.title("XGBoost: Account value compared to market trend")
     plt.legend()
     plt.show()
 
